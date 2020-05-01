@@ -1,6 +1,7 @@
 package picgen
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"image"
@@ -64,21 +65,32 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Last-Modified", cacheSince)
 	w.Header().Set("Expires", cacheUntil)
 
-	switch op.Format {
+	writeImage(w, &img, op.Format)
+
+}
+
+func writeImage(w http.ResponseWriter, img *image.Image, format string) {
+	buffer := new(bytes.Buffer)
+
+	switch format {
 	case "jpeg", "jpg":
 		w.Header().Set("Content-Type", "image/jpeg")
-		if err := jpeg.Encode(w, img, &jpeg.Options{}); err != nil {
+		if err := jpeg.Encode(buffer, *img, &jpeg.Options{}); err != nil {
 			log.Fatal(err)
 		}
 	case "png":
 		fallthrough
 	default:
 		w.Header().Set("Content-Type", "image/png")
-		if err := png.Encode(w, img); err != nil {
+		if err := png.Encode(buffer, *img); err != nil {
 			log.Fatal(err)
 		}
 	}
 
+	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+	if _, err := w.Write(buffer.Bytes()); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func parseRequest(r *http.Request) (*options, error) {
