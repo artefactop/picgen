@@ -14,6 +14,7 @@ import (
 type options struct {
 	Width, Height int
 	Color         color.RGBA
+	Format        string
 	LabelOptions  *labelOptions
 }
 

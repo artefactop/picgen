@@ -5,21 +5,28 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/golang/freetype/truetype"
+	"github.com/gorilla/mux"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/gofont/goregular"
 )
 
 const (
-	defaultSize      = int(100)
-	defaultLabelSize = float64(65.0)
+	defaultSize        = int(100)
+	defaultLabelSize   = float64(65.0)
+	defaultImageFormat = string("png")
+	maxArea            = int(16000000)
+	maxWidth           = int(9999)
+	maxHeight          = int(9999)
 )
 
 var (
@@ -29,32 +36,86 @@ var (
 
 // RootHandler ...
 func RootHandler(w http.ResponseWriter, req *http.Request) {
-	urlPart := strings.Split(req.URL.Path, "/")
 
-	width, height := parseImageSize(urlPart[1])
-	backgroundColor := parseColor(urlPart[2])
-
-	fontColorAndImgTypePart := strings.Split(urlPart[3], ".")
-
-	labelColor := parseColor(fontColorAndImgTypePart[0])
-
-	queryValues := req.URL.Query()
-	label := queryValues.Get("label")
-	labelSize := parseLabelSize(queryValues.Get("size"))
-
-	font, err := truetype.Parse(goregular.TTF)
+	op, err := parseRequest(req)
 	if err != nil {
+		if err == errInvalidFormat {
+			w.WriteHeader(http.StatusBadRequest)
+		}
 		fmt.Fprintf(w, "kaboom %v", err)
 		return
 	}
 
-	log.Printf("Size:%dx%d, Color:%v, Label:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
-		width, height, backgroundColor, label, labelColor, labelSize, font.Name(4))
+	img, err := newImage(op)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "kaboom %v", err)
+		return
+	}
+
+	// TODO move to a middleware
+	cacheSince := time.Now().Format(http.TimeFormat)
+	cacheUntil := time.Now().AddDate(0, 0, 180).Format(http.TimeFormat) // 180 days
+	w.Header().Set("Cache-Control", "public, max-age=15552000")         // 180 days
+	w.Header().Set("Last-Modified", cacheSince)
+	w.Header().Set("Expires", cacheUntil)
+
+	switch op.Format {
+	case "jpeg", "jpg":
+		w.Header().Set("Content-Type", "image/jpeg")
+		if err := jpeg.Encode(w, img, &jpeg.Options{}); err != nil {
+			log.Fatal(err)
+		}
+	case "png":
+		fallthrough
+	default:
+		w.Header().Set("Content-Type", "image/png")
+		if err := png.Encode(w, img); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
+
+func parseRequest(r *http.Request) (*options, error) {
+	vars := mux.Vars(r)
+
+	sizeStr := vars["size"]
+	width, height := parseImageSize(sizeStr)
+
+	if width*height >= maxArea || width > maxWidth || height > maxHeight {
+		return &options{}, errInvalidFormat
+	}
+	colorStr := vars["color"]
+	backgroundColor := parseColor(colorStr)
+
+	labelColorStr := vars["labelColor"]
+	fontColorAndImgFormatPart := strings.Split(labelColorStr, ".")
+
+	labelColor := parseColor(fontColorAndImgFormatPart[0])
+
+	imageFormat := defaultImageFormat
+	if len(fontColorAndImgFormatPart) > 1 {
+		imageFormat = fontColorAndImgFormatPart[1]
+	}
+
+	queryValues := r.URL.Query()
+	label := queryValues.Get("text")
+	labelSize := parseLabelSize(queryValues.Get("size"))
+
+	font, err := truetype.Parse(goregular.TTF)
+	if err != nil {
+		return &options{}, err
+	}
+
+	log.Printf("Size:%dx%d, Format:%s, Color:%v, Label:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
+		width, height, imageFormat, backgroundColor, label, labelColor, labelSize, font.Name(4))
 
 	op := &options{
 		Width:  width,
 		Height: height,
 		Color:  backgroundColor,
+		Format: imageFormat,
 		LabelOptions: &labelOptions{
 			Text:  label,
 			Color: labelColor,
@@ -65,16 +126,7 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 			Y:     height / 2,
 		},
 	}
-
-	img, err := newImage(op)
-	if err != nil {
-		fmt.Fprintf(w, "kaboom %v", err)
-		return
-	}
-	w.Header().Set("Content-Type", "image/png")
-	if err := png.Encode(w, img); err != nil {
-		log.Fatal(err)
-	}
+	return op, nil
 }
 
 func encodeImageFormat(w io.Writer, img image.Image, format string) error {
@@ -147,10 +199,10 @@ func parseHexColor(s string) (color.RGBA, error) {
 		c.R = hexToByte(s[0])<<4 + hexToByte(s[1])
 		c.G = hexToByte(s[2])<<4 + hexToByte(s[3])
 		c.B = hexToByte(s[4])<<4 + hexToByte(s[5])
-	case 4:
+	case 3:
 		c.R = hexToByte(s[0]) * 17
-		c.G = hexToByte(s[2]) * 17
-		c.B = hexToByte(s[4]) * 17
+		c.G = hexToByte(s[1]) * 17
+		c.B = hexToByte(s[2]) * 17
 	default:
 		return c, errInvalidFormat
 	}
