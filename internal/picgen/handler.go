@@ -36,6 +36,10 @@ var (
 
 // RootHandler ...
 func RootHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if req.Method == http.MethodOptions {
+		return
+	}
 
 	op, err := parseRequest(req)
 	if err != nil {
