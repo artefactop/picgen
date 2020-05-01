@@ -9,5 +9,5 @@ import (
 func main() {
 
 	http.HandleFunc("/", picgen.RootHandler)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":3001", nil)
 }

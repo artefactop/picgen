@@ -1,23 +1,72 @@
 package picgen
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
+	"io"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
-	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
-	"golang.org/x/image/font"
+	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/gofont/goregular"
+)
+
+const (
+	defaultSize      = int(100)
+	defaultLabelSize = float64(65.0)
+)
+
+var (
+	defaultColor     = color.RGBA{100, 200, 200, 255}
+	errInvalidFormat = errors.New("invalid format")
 )
 
 // RootHandler ...
 func RootHandler(w http.ResponseWriter, req *http.Request) {
-	img, err := buildImage(200, 100, "Hi there!", 16)
+	urlPart := strings.Split(req.URL.Path, "/")
+
+	width, height := parseImageSize(urlPart[1])
+	backgroundColor := parseColor(urlPart[2])
+
+	fontColorAndImgTypePart := strings.Split(urlPart[3], ".")
+
+	labelColor := parseColor(fontColorAndImgTypePart[0])
+
+	queryValues := req.URL.Query()
+	label := queryValues.Get("label")
+	labelSize := parseLabelSize(queryValues.Get("size"))
+
+	font, err := truetype.Parse(goregular.TTF)
+	if err != nil {
+		fmt.Fprintf(w, "kaboom %v", err)
+		return
+	}
+
+	log.Printf("Size:%dx%d, Color:%v, Label:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
+		width, height, backgroundColor, label, labelColor, labelSize, font.Name(4))
+
+	op := &options{
+		Width:  width,
+		Height: height,
+		Color:  backgroundColor,
+		LabelOptions: &labelOptions{
+			Text:  label,
+			Color: labelColor,
+			Font:  font,
+			DPI:   72.0,
+			Size:  labelSize,
+			X:     width / 2,
+			Y:     height / 2,
+		},
+	}
+
+	img, err := newImage(op)
 	if err != nil {
 		fmt.Fprintf(w, "kaboom %v", err)
 		return
@@ -28,46 +77,82 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func buildImage(width, height int, label string, fontSize float64) (image.Image, error) {
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	clr := color.RGBA{100, 200, 200, 255}
-
-	draw.Draw(img, img.Bounds(), &image.Uniform{clr}, image.ZP, draw.Src)
-
-	font, err := truetype.Parse(goregular.TTF)
-	if err != nil {
-		return nil, err
-	}
-	x, y := width/2, height/2
-	dpi := 72.0
-	addLabel(img, font, fontSize, dpi, label, x, y)
-
-	return img, nil
+func encodeImageFormat(w io.Writer, img image.Image, format string) error {
+	return png.Encode(w, img)
 }
 
-func addLabel(img *image.RGBA, drawFont *truetype.Font, fontSize, dpi float64, label string, x, y int) error {
-	fontForeGroundColor := image.NewUniform(color.Black)
-	ctx := freetype.NewContext()
-	ctx.SetDPI(dpi)
-	ctx.SetFont(drawFont)
-	ctx.SetFontSize(fontSize)
-	ctx.SetClip(img.Bounds())
-	ctx.SetDst(img)
-	ctx.SetSrc(fontForeGroundColor)
-
-	opts := truetype.Options{Size: fontSize}
-	face := truetype.NewFace(drawFont, &opts)
-	d := &font.Drawer{
-		Face: face,
+func parseLabelSize(s string) float64 {
+	sz, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return defaultLabelSize
 	}
-	labelWidht := int(d.MeasureString(label) >> 6)
-	labelHeight := int(face.Metrics().Height >> 6)
+	return sz
+}
 
-	// Set the label centered alignment to x,y
-	pt := freetype.Pt(x-labelWidht/2, y+labelHeight/2)
-	if _, err := ctx.DrawString(label, pt); err != nil {
-		return err
+func parseImageSize(s string) (int, int) {
+	sizePart := strings.Split(s, "x")
+	w, err := strconv.Atoi(sizePart[0])
+	if err != nil {
+		return defaultSize, defaultSize
 	}
-	return nil
+	if len(sizePart) > 1 {
+		h, err := strconv.Atoi(sizePart[1])
+		if err != nil {
+			return w, w
+		}
+		return w, h
+	}
+	return w, w
+}
 
+func parseColor(s string) color.RGBA {
+	clr, err := parseNameColor(s)
+	if err == nil {
+		return clr
+	}
+	clr, err = parseHexColor(s)
+	if err == nil {
+		return clr
+	}
+	return defaultColor
+}
+
+func parseNameColor(s string) (color.RGBA, error) {
+	if c, ok := colornames.Map[s]; ok == true {
+		return c, nil
+	}
+	return color.RGBA{}, errInvalidFormat
+}
+
+func parseHexColor(s string) (color.RGBA, error) {
+	c := color.RGBA{}
+	c.A = 0xff
+
+	var err error
+	hexToByte := func(b byte) byte {
+		switch {
+		case b >= '0' && b <= '9':
+			return b - '0'
+		case b >= 'a' && b <= 'f':
+			return b - 'a' + 10
+		case b >= 'A' && b <= 'F':
+			return b - 'A' + 10
+		}
+		err = errInvalidFormat
+		return 0
+	}
+
+	switch len(s) {
+	case 6:
+		c.R = hexToByte(s[0])<<4 + hexToByte(s[1])
+		c.G = hexToByte(s[2])<<4 + hexToByte(s[3])
+		c.B = hexToByte(s[4])<<4 + hexToByte(s[5])
+	case 4:
+		c.R = hexToByte(s[0]) * 17
+		c.G = hexToByte(s[2]) * 17
+		c.B = hexToByte(s[4]) * 17
+	default:
+		return c, errInvalidFormat
+	}
+	return c, err
 }
