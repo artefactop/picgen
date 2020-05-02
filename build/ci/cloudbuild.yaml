@@ -38,6 +38,6 @@ steps:
   - '--platform'
   - 'managed'
   id: 'cloud-run-deploy'
-  waitFor: ['docker-build-revision']
+  waitFor: ['docker-push-revision']
 
 images: ['gcr.io/$PROJECT_ID/picgen:$COMMIT_SHA']
