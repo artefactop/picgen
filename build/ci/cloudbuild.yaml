@@ -1,0 +1,43 @@
+# This cloud build is intended to be executed 
+# with the Cloud Build Github App triggers
+options:
+  env:
+  - GO111MODULE=on
+  - GOPROXY=https://proxy.golang.org
+  - CGO_ENABLED=0
+  - GOOS=linux
+  
+steps:
+# Build binaries
+- name: golang:1.14
+  args: ['go', 'build', '-mod=readonly', '-v', './cmd/picgen']
+  id: 'go-build'
+
+# Docker build revision tag.
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/picgen:$COMMIT_SHA', '-f', './build/Dockerfile', '.' ]
+  id: 'docker-build-revision'
+  waitFor: ['go-build']
+
+# Push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/picgen:$COMMIT_SHA']
+  id: 'docker-push-revision'
+  waitFor: ['docker-build-revision']
+
+# Deploy container image to Cloud Run
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - 'run'
+  - 'deploy'
+  - 'picgen'
+  - '--image'
+  - 'gcr.io/$PROJECT_ID/picgen:$COMMIT_SHA'
+  - '--region'
+  - 'europe-west1'
+  - '--platform'
+  - 'managed'
+  id: 'cloud-run-deploy'
+  waitFor: ['docker-build-revision']
+
+images: ['gcr.io/$PROJECT_ID/picgen:$COMMIT_SHA']
