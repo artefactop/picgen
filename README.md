@@ -3,6 +3,8 @@ Picture generator service
 
 > Note: Alpha stage not ready for production
 
+![picgen example](https://picgen.xyz/256x158/ce3262/black.png?text=picgen&size=41)
+
 http://localhost:3001/400x200/white/ce3262.png?text=picgen&size=65
 
 It returns an image created with path values:
