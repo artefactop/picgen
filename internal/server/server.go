@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -51,6 +52,49 @@ type imageRequest struct {
 	LabelY     int
 }
 
+// RootHandler ...
+func RootHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if req.Method == http.MethodOptions {
+		return
+	}
+
+	queryValues := req.URL.Query()
+
+	width, height := parseImageSize(queryValues.Get("x"))
+
+	if width*height >= maxArea || width > maxWidth || height > maxHeight {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "kaboom %v", errInvalidFormat)
+		return
+	}
+
+	backgroundColor := parseColor(queryValues.Get("b"))
+	labelText := queryValues.Get("t")
+	labelColor := parseColor(queryValues.Get("f"))
+
+	fontName := "goregular"
+
+	log.Printf("Size:%dx%d, Format:%s, Color:%v, Label.Text:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
+		width, height, defaultImageFormat, backgroundColor, labelText, labelColor, defaultLabelSize, fontName)
+
+	ir := &imageRequest{
+		Width:      width,
+		Height:     height,
+		Color:      backgroundColor,
+		Format:     defaultImageFormat,
+		LabelText:  labelText,
+		LabelColor: labelColor,
+		LabelName:  fontName,
+		LabelDpi:   72.0,
+		LabelSize:  defaultLabelSize,
+		LabelX:     width / 2,
+		LabelY:     height / 2,
+	}
+
+	writeImage(w, ir)
+}
+
 // PathHandler ...
 func PathHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -58,7 +102,7 @@ func PathHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	op, err := parseRequest(req)
+	ir, err := parseRequest(req)
 	if err != nil {
 		if err == errInvalidFormat {
 			w.WriteHeader(http.StatusBadRequest)
@@ -67,41 +111,40 @@ func PathHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	img := image.NewImage(op.Width, op.Height, op.Color)
+	_, err = writeImage(w, ir)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "kaboom %v", err)
 		return
 	}
+}
+
+func writeImage(w http.ResponseWriter, ir *imageRequest) (int, error) {
+	img := image.NewImage(ir.Width, ir.Height, ir.Color)
 
 	f, err := truetype.Parse(goregular.TTF)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "kaboom %v", err)
+		return 0, err
 	}
 
-	if op.LabelText != "" {
-		label := image.NewLabel(op.LabelText, op.LabelColor, op.LabelDpi, f, op.LabelSize)
+	if ir.LabelText != "" {
+		label := image.NewLabel(ir.LabelText, ir.LabelColor, ir.LabelDpi, f, ir.LabelSize)
 
-		err = image.DrawLabel(img, *label, op.LabelX, op.LabelY)
+		err = image.DrawLabel(img, *label, ir.LabelX, ir.LabelY)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "kaboom %v", err)
-			return
+			return 0, err
 		}
 	}
 
 	addCacheHeaders(w)
 
 	buffer := new(bytes.Buffer)
-	size, err := image.Encode(buffer, img, op.Format)
+	size, err := image.Encode(buffer, img, ir.Format)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "kaboom %v", err)
-		return
+		return 0, err
 	}
 	w.Header().Set("Content-Length", strconv.Itoa(size))
-	switch op.Format {
+	switch ir.Format {
 	case "JPEG", "JPG":
 		w.Header().Set("Content-Type", "image/jpeg")
 	case "PNG":
@@ -110,11 +153,5 @@ func PathHandler(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
 	}
 
-	_, err = w.Write(buffer.Bytes())
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "kaboom %v", err)
-		return
-	}
-
+	return w.Write(buffer.Bytes())
 }

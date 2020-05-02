@@ -18,3 +18,16 @@ You can set color with color keyword names as defined in [SVG 1.1](https://www.w
 Image format supported:
 - png (default)
 - jpeg (no recommended)
+
+Other API format
+
+http://localhost:3001?x=400x200&b=000&f=ce3262?t=picgen
+
+It returns an image created with path values:
+- Size: 400x200px 
+- Background Color: #FFFFFF
+- Label Color: #CE3262
+- Image format: `image/png`
+- Label Text: picgen
+- Label Size: default (65)
+

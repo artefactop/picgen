@@ -13,6 +13,7 @@ func main() {
 
 	r := mux.NewRouter()
 
+	r.HandleFunc("/", server.RootHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/{size}/{color}/{labelColor}", server.PathHandler).Methods("GET", "OPTIONS")
 	r.Use(mux.CORSMethodMiddleware(r))
 
