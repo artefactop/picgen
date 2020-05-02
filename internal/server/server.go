@@ -80,13 +80,15 @@ func PathHandler(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "kaboom %v", err)
 	}
 
-	label := image.NewLabel(op.LabelText, op.LabelColor, op.LabelDpi, f, op.LabelSize)
+	if op.LabelText != "" {
+		label := image.NewLabel(op.LabelText, op.LabelColor, op.LabelDpi, f, op.LabelSize)
 
-	err = image.DrawLabel(img, *label, op.LabelX, op.LabelY)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "kaboom %v", err)
-		return
+		err = image.DrawLabel(img, *label, op.LabelX, op.LabelY)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "kaboom %v", err)
+			return
+		}
 	}
 
 	addCacheHeaders(w)
