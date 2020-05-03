@@ -1,2 +1,5 @@
 remote_theme: pmarsceill/just-the-docs
 search: disable
+aux_links:
+  "PicGen on GitHub":
+    - "https://github.com/artefactop/picgen"

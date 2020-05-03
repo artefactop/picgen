@@ -33,7 +33,7 @@ Request an image with this URL format:
 
 > Color: Color can be represented with its Hexadecimal value `#CE3262` or color keyword names as defined in [SVG 1.1](https://www.w3.org/TR/2003/REC-SVG11-20030114/types.html#ColorKeywords)
 
-- Size `required`: width x heigth in pixels examples: `400x200`, indicate only one value for squared images `200`
+- Size `required`: width x height in pixels examples: `400x200`, indicate only one value for squared images `200`
 - Background Color `required`: Background color of image
 - Label Color `required`: Label color
 - Image Format: `.png` (default) or `.jpeg` (no recommended)
