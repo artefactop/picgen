@@ -10,9 +10,10 @@ Example: https://picgen.xyz/256x158/ce3262/black.png?text=picgen&size=41
 > Note: Alpha stage not ready for production
 
 
-## Documentation
+## Usage
 
-Go to [documentation](https://artefactop.github.io/picgen/) to see how to use it.
+[View the documentation](https://artefactop.github.io/picgen/) for usage information.
+
 
 ## Sponsoring
 
