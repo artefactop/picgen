@@ -1,6 +1,6 @@
 # Picture Generator Service
 
-Pure [GO](https://golang.org) service that returns images that you can use: as placeholders while designing a web, make dinamic banners for your website, make default users avatars as in Gmail.
+Pure [GO](https://golang.org) service that returns images that you can use: as placeholders while designing a web, make dinamic banners for your website, make default users avatars as in Gmail. See on [Github](https://github.com/artefactop/picgen)
 
 ![picgen example](https://picgen.xyz/256x158/ce3262/black.png?text=picgen&size=41)
 
