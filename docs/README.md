@@ -1,8 +1,23 @@
 # Picture Generator Service
 
-Pure [GO](https://golang.org) service that returns images that you can use to: use as placeholders while designing a web, make dinamic banners for your website, make default users avatars.
+Pure [GO](https://golang.org) service that returns images that you can use: as placeholders while designing a web, make dinamic banners for your website, make default users avatars as in Gmail.
 
 ![picgen example](https://picgen.xyz/256x158/ce3262/black.png?text=picgen&size=41)
+
+## Examples
+
+Placeholder: https://picgen.xyz/350x200/fcc5dc/001b46
+
+![Placeholder image](https://picgen.xyz/350x200/fcc5dc/001b46)
+
+Banner: https://picgen.xyz/550x128/7dffcf/1000c3?text=Banner
+
+![Banner image](https://picgen.xyz/550x128/7dffcf/1000c3?text=Banner)
+
+Avatar: https://picgen.xyz/64/deepskyblue/floralwhite?text=P&size=40
+
+![Avatar image](https://picgen.xyz/64/deepskyblue/floralwhite?text=P&size=40)
+
 
 ## How to use
 
