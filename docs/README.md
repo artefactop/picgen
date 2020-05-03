@@ -55,7 +55,7 @@ It returns an image created with path values:
 ## Configure your service
 
 You can fork this project and run it in your own GCP project. 
-This project is ready to deploy on (Google Cloud Run)[https://cloud.google.com/run]. Configuration files are under (build)[https://github.com/artefactop/picgen/tree/master/build] directory.
+This project is ready to deploy on [Google Cloud Run](https://cloud.google.com/run). Configuration files are under [build](https://github.com/artefactop/picgen/tree/master/build) directory.
 
 - Dockerfile: Service Dockerfile 
 - ci/cloudbuild: 
