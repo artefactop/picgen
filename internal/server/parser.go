@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"image/color"
 	"log"
 	"net/http"
@@ -34,20 +35,23 @@ func parseRequest(r *http.Request) (*imageRequest, error) {
 	}
 
 	queryValues := r.URL.Query()
-	label := queryValues.Get("text")
+	labelText := queryValues.Get("text")
+	if labelText == "" {
+		labelText = fmt.Sprintf("%dx%d", width, height)
+	}
 	labelSize := parseLabelSize(queryValues.Get("size"))
 
 	fontName := "goregular"
 
 	log.Printf("Size:%dx%d, Format:%s, Color:%v, Label:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
-		width, height, imageFormat, backgroundColor, label, labelColor, labelSize, fontName)
+		width, height, imageFormat, backgroundColor, labelText, labelColor, labelSize, fontName)
 
 	op := &imageRequest{
 		Width:      width,
 		Height:     height,
 		Color:      backgroundColor,
 		Format:     imageFormat,
-		LabelText:  label,
+		LabelText:  labelText,
 		LabelColor: labelColor,
 		LabelName:  fontName,
 		LabelDpi:   72.0,

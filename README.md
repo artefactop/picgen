@@ -12,7 +12,7 @@ It returns an image created with path values:
 - Background Color: white
 - Label Color: #CE3262
 - Image format: `image/png`
-- Label Text: picgen
+- Label Text: picgen (default WxH)
 - Label Size: 65
 
 You can set color with color keyword names as defined in [SVG 1.1](https://www.w3.org/TR/2003/REC-SVG11-20030114/types.html#ColorKeywords) or with its hexadecimal RGB value.
@@ -30,6 +30,6 @@ It returns an image created with path values:
 - Background Color: #FFFFFF
 - Label Color: #CE3262
 - Image format: `image/png`
-- Label Text: picgen
+- Label Text: picgen (default #)
 - Label Size: default (65)
 

@@ -71,6 +71,9 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 
 	backgroundColor := parseColor(queryValues.Get("b"))
 	labelText := queryValues.Get("t")
+	if labelText == "" {
+		labelText = "#"
+	}
 	labelColor := parseColor(queryValues.Get("f"))
 
 	fontName := "goregular"
