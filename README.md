@@ -13,3 +13,7 @@ Example: https://picgen.xyz/256x158/ce3262/black.png?text=picgen&size=41
 ## Documentation
 
 Go to [documentation](https://artefactop.github.io/picgen/) to see how to use it.
+
+## Sponsoring
+
+- [Verse link](https://verse.me/pay?to=2jqcf2fmkfnrnjk3584g)
