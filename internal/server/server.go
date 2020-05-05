@@ -1,13 +1,11 @@
 package server
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"image/color"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/artefactop/picgen/internal/image"
@@ -141,20 +139,5 @@ func writeImage(w http.ResponseWriter, ir *imageRequest) (int, error) {
 
 	addCacheHeaders(w)
 
-	buffer := new(bytes.Buffer)
-	size, err := image.Encode(buffer, img, ir.Format)
-	if err != nil {
-		return 0, err
-	}
-	w.Header().Set("Content-Length", strconv.Itoa(size))
-	switch ir.Format {
-	case "JPEG", "JPG":
-		w.Header().Set("Content-Type", "image/jpeg")
-	case "PNG":
-		fallthrough
-	default:
-		w.Header().Set("Content-Type", "image/png")
-	}
-
-	return w.Write(buffer.Bytes())
+	return image.Encode(w, img, ir.Format)
 }
