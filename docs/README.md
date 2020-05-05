@@ -49,8 +49,8 @@ Request an image with this URL format:
 | Field  | Required | Default | Values |
 |---|---|---|---|
 | Size | no  | `100x100` | Set width and height in pixels: `400x200`<br> Indicate only one value for squared images: `200` |
-| Background Color   | no  | `64C8C8`  | Color as hex or keyword name |
-| Label Color  | no | `64C8C8` | Color as hex or keyword name |
+| Background Color   | no  | `00ADD8`  | Color as hex or keyword name |
+| Label Color  | no | `FFFFFF` | Color as hex or keyword name |
 | Image Format | no  | png  | Not supported |
 | Label Text   | no  | Size of the image  | URL encoded text  |
 | Label Size   | no  | 65   | Not supported |

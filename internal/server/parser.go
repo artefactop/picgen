@@ -22,12 +22,12 @@ func parseRequest(r *http.Request) (*imageRequest, error) {
 		return &imageRequest{}, errInvalidFormat
 	}
 	colorStr := vars["color"]
-	backgroundColor := parseColor(colorStr)
+	backgroundColor := parseColor(colorStr, defaultColor)
 
 	labelColorStr := vars["labelColor"]
 	fontColorAndImgFormatPart := strings.Split(labelColorStr, ".")
 
-	labelColor := parseColor(fontColorAndImgFormatPart[0])
+	labelColor := parseColor(fontColorAndImgFormatPart[0], defaultLabelColor)
 
 	imageFormat := defaultImageFormat
 	if len(fontColorAndImgFormatPart) > 1 {
@@ -86,7 +86,7 @@ func parseImageSize(s string) (int, int) {
 	return w, w
 }
 
-func parseColor(s string) color.RGBA {
+func parseColor(s string, d color.RGBA) color.RGBA {
 	clr, err := parseNameColor(s)
 	if err == nil {
 		return clr
@@ -95,7 +95,7 @@ func parseColor(s string) color.RGBA {
 	if err == nil {
 		return clr
 	}
-	return defaultColor
+	return d
 }
 
 func parseNameColor(s string) (color.RGBA, error) {

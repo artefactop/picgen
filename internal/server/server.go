@@ -23,8 +23,9 @@ const (
 )
 
 var (
-	defaultColor     = color.RGBA{100, 200, 200, 255}
-	errInvalidFormat = errors.New("invalid format")
+	defaultColor      = color.RGBA{1, 173, 216, 255}
+	defaultLabelColor = color.RGBA{255, 255, 255, 255}
+	errInvalidFormat  = errors.New("invalid format")
 )
 
 func addCacheHeaders(w http.ResponseWriter) {
@@ -67,12 +68,12 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	backgroundColor := parseColor(queryValues.Get("b"))
+	backgroundColor := parseColor(queryValues.Get("b"), defaultColor)
 	labelText := queryValues.Get("t")
 	if labelText == "" {
 		labelText = "#"
 	}
-	labelColor := parseColor(queryValues.Get("f"))
+	labelColor := parseColor(queryValues.Get("f"), defaultLabelColor)
 
 	fontName := "goregular"
 
