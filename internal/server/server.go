@@ -30,8 +30,8 @@ var (
 
 func addCacheHeaders(w http.ResponseWriter) {
 	cacheSince := time.Now().Format(http.TimeFormat)
-	cacheUntil := time.Now().AddDate(0, 0, 180).Format(http.TimeFormat) // 180 days
-	w.Header().Set("Cache-Control", "public, max-age=15552000")         // 180 days
+	cacheUntil := time.Now().AddDate(0, 0, 180).Format(http.TimeFormat)    // 180 days
+	w.Header().Set("Cache-Control", "public, immutable, max-age=15552000") // 180 days
 	w.Header().Set("Last-Modified", cacheSince)
 	w.Header().Set("Expires", cacheUntil)
 }
