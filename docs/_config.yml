@@ -1,5 +1,17 @@
 remote_theme: pmarsceill/just-the-docs
-search: false
+search_enabled: false
 aux_links:
   "picgen on GitHub":
     - "https://github.com/artefactop/picgen"
+
+title: picgen 
+tagline: Picture Generator Service
+description: Pure GO service that generates images based on path, that you can use: as placeholders while designing a web, make dinamic banners for your website, make default users avatars as in Gmail.
+url: "https://artefactop.github.io/picgen/"
+author:
+  twiter: jln111
+  
+ga_tracking: UA-136382323-2
+
+plugins:
+  - jekyll-seo-tag
