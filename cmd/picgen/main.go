@@ -4,12 +4,20 @@ import (
 	"log"
 	"net/http"
 
+	"cloud.google.com/go/profiler"
 	"github.com/gorilla/mux"
 
 	"github.com/artefactop/picgen/internal/server"
 )
 
 func main() {
+
+	if err := profiler.Start(profiler.Config{
+		Service:        "picgen",
+		ServiceVersion: "0.0.1",
+	}); err != nil {
+		log.Printf("Error starting profiling: %v\n", err)
+	}
 
 	r := mux.NewRouter()
 
