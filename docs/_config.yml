@@ -12,6 +12,3 @@ author:
   twiter: jln111
   
 ga_tracking: UA-136382323-2
-
-plugins:
-  - jekyll-seo-tag
