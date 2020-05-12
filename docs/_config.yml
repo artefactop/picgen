@@ -7,7 +7,7 @@ aux_links:
 title: picgen 
 tagline: Picture Generator Service
 description: "Pure GO service that generates images based on path, that you can use: as placeholders while designing a web, make dinamic banners for your website, make default users avatars as in Gmail."
-url: "https://artefactop.github.io/picgen/"
+
 author:
   twiter: jln111
   
