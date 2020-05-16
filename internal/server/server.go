@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/artefactop/picgen/internal/image"
 	"github.com/golang/freetype/truetype"
