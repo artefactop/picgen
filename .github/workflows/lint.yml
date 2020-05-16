@@ -1,0 +1,68 @@
+name: Static Code Analisys
+on: 
+  pull_request:
+    branches: [ master ]
+jobs:
+  golangci-lint:
+    name: runner / golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          tool_name: golangci-lint
+  
+  golint:
+    name: runner / golint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: golint
+        uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          golangci_lint_flags: "--disable-all -E golint"
+          tool_name: golint
+
+  errcheck:
+    name: runner / errcheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: errcheck
+        uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          golangci_lint_flags: "--disable-all -E errcheck"
+          tool_name: errcheck
+
+  gosec:
+    name: runner / gosec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: gosec
+        uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          golangci_lint_flags: "--disable-all -E gosec"
+          tool_name: gosec
+
+  gocyclo:
+    name: runner / gocyclo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: gocyclo
+        uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          golangci_lint_flags: "--disable-all -E gocyclo"
+          tool_name: gocyclo

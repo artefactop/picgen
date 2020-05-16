@@ -8,10 +8,16 @@ options:
   - GOOS=linux
   
 steps:
+# Test
+- name: golang:1.14
+  args: ['go', 'test', '-mod=readonly', '-v', './...']
+  id: 'go-test'
+
 # Build binaries
 - name: golang:1.14
   args: ['go', 'build', '-mod=readonly', '-v', './cmd/picgen']
   id: 'go-build'
+  waitFor: ['go-test']
 
 # Docker build revision tag.
 - name: 'gcr.io/cloud-builders/docker'
