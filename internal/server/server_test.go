@@ -16,7 +16,7 @@ func TestWriteImage(t *testing.T) {
 		LabelColor: defaultLabelColor,
 		LabelName:  "goregular",
 		LabelDpi:   72.0,
-		LabelSize:  defaultLabelSize,
+		LabelSize:  calculateLabelSize(1, defaultSize, defaultSize),
 		LabelX:     defaultSize / 2,
 		LabelY:     defaultSize / 2,
 	}
@@ -26,7 +26,7 @@ func TestWriteImage(t *testing.T) {
 
 	size := len(rr.Body.Bytes())
 	// FIXME: This image is too big, maybe because the label
-	expected := 1118
+	expected := 1076
 	if size != expected {
 		t.Errorf("handler returned unexpected body size: got %v want %v", size, expected)
 	}
