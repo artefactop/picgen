@@ -8,8 +8,8 @@ on:
 
 jobs:
 
-  build:
-    name: Build
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
 
@@ -24,4 +24,3 @@ jobs:
 
     - name: Test
       run: go test -mod=readonly -v ./...
-
