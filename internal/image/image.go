@@ -20,7 +20,7 @@ type Label struct {
 
 	Text   string
 	Color  color.Color
-	Widht  int
+	Width  int
 	Heigth int
 }
 
@@ -31,7 +31,7 @@ func DrawLabel(m *image.NRGBA, l Label, x, y int) error {
 	l.SetDst(m)
 
 	// Set the l centered alignment to x,y
-	pt := freetype.Pt(x-l.Widht/2, y+l.Heigth/2)
+	pt := freetype.Pt(x, y)
 	if _, err := l.DrawString(l.Text, pt); err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func NewLabel(text string, color color.Color, dpi float64, f *truetype.Font, fon
 	ctx.SetFont(f)
 	ctx.SetFontSize(fontSize)
 
-	opts := truetype.Options{Size: fontSize}
+	opts := truetype.Options{Size: fontSize, DPI: dpi}
 	face := truetype.NewFace(f, &opts)
 	d := &font.Drawer{
 		Face: face,
@@ -57,7 +57,7 @@ func NewLabel(text string, color color.Color, dpi float64, f *truetype.Font, fon
 		Context: *ctx,
 		Text:    text,
 		Color:   color,
-		Widht:   w,
+		Width:   w,
 		Heigth:  h,
 	}
 

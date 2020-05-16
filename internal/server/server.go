@@ -133,8 +133,9 @@ func writeImage(w http.ResponseWriter, ir *imageRequest) (int, error) {
 
 	if ir.LabelText != "" {
 		label := image.NewLabel(ir.LabelText, ir.LabelColor, ir.LabelDpi, f, ir.LabelSize)
-
-		err = image.DrawLabel(img, *label, ir.LabelX, ir.LabelY)
+		lx := int((ir.Width - label.Width) / 2.0)
+		ly := int((ir.Height-label.Heigth)/2.0 + label.Heigth)
+		err = image.DrawLabel(img, *label, lx, ly)
 		if err != nil {
 			return 0, err
 		}
