@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,7 +40,10 @@ func parseRequest(r *http.Request) (*imageRequest, error) {
 	if labelText == "" {
 		labelText = fmt.Sprintf("%dx%d", width, height)
 	}
-	labelSize := parseLabelSize(queryValues.Get("size"))
+	labelSize, err := strconv.ParseFloat(queryValues.Get("size"), 64)
+	if err != nil {
+		labelSize = calculateLabelSize(len(labelText), width, height)
+	}
 
 	fontName := "goregular"
 
@@ -62,12 +66,8 @@ func parseRequest(r *http.Request) (*imageRequest, error) {
 	return op, nil
 }
 
-func parseLabelSize(s string) float64 {
-	sz, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return defaultLabelSize
-	}
-	return sz
+func calculateLabelSize(l, w, h int) float64 {
+	return math.Max(math.Min(float64(w)/float64(l)*float64(1.15), float64(h)*float64(0.5)), float64(5))
 }
 
 func parseImageSize(s string) (int, int) {

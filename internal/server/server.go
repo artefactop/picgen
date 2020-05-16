@@ -16,7 +16,6 @@ import (
 
 const (
 	defaultSize        = int(100)
-	defaultLabelSize   = float64(65.0)
 	defaultImageFormat = string("PNG")
 	maxArea            = int(16000000)
 	maxWidth           = int(9999)
@@ -76,10 +75,12 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	labelColor := parseColor(queryValues.Get("f"), defaultLabelColor)
 
+	labelSize := calculateLabelSize(len(labelText), width, height)
+
 	fontName := "goregular"
 
 	log.Printf("Size:%dx%d, Format:%s, Color:%v, Label.Text:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
-		width, height, defaultImageFormat, backgroundColor, labelText, labelColor, defaultLabelSize, fontName)
+		width, height, defaultImageFormat, backgroundColor, labelText, labelColor, labelSize, fontName)
 
 	ir := &imageRequest{
 		Width:      width,
@@ -90,7 +91,7 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 		LabelColor: labelColor,
 		LabelName:  fontName,
 		LabelDpi:   72.0,
-		LabelSize:  defaultLabelSize,
+		LabelSize:  labelSize,
 		LabelX:     width / 2,
 		LabelY:     height / 2,
 	}
