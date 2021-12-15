@@ -9,12 +9,12 @@ options:
   
 steps:
 # Test
-- name: golang:1.14
+- name: golang:1.17
   args: ['go', 'test', '-mod=readonly', '-v', './...']
   id: 'go-test'
 
 # Build binaries
-- name: golang:1.14
+- name: golang:1.17
   args: ['go', 'build', '-mod=readonly', '-v', './cmd/picgen']
   id: 'go-build'
   waitFor: ['go-test']

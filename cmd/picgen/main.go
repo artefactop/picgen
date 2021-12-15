@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"cloud.google.com/go/profiler"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
@@ -22,13 +21,6 @@ func main() {
 		Str("role", "picgen").
 		Str("host", host).
 		Logger()
-
-	if err := profiler.Start(profiler.Config{
-		Service:        "picgen",
-		ServiceVersion: "0.0.1",
-	}); err != nil {
-		log.Warn().Msgf("Error starting profiling: %v", err)
-	}
 
 	r := mux.NewRouter()
 

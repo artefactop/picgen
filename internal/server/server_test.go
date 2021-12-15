@@ -26,7 +26,7 @@ func TestWriteImage(t *testing.T) {
 
 	size := len(rr.Body.Bytes())
 	// FIXME: This image is too big, maybe because the label
-	expected := 1076
+	expected := 1077
 	if size != expected {
 		t.Errorf("handler returned unexpected body size: got %v want %v", size, expected)
 	}
