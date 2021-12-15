@@ -2,6 +2,7 @@ package image
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -21,11 +22,11 @@ type Label struct {
 	Text   string
 	Color  color.Color
 	Width  int
-	Heigth int
+	Height int
 }
 
-//DrawLabel Draw label l on position (x,y) of m Image
-func DrawLabel(m *image.NRGBA, l Label, x, y int) error {
+// DrawLabel Draw label l on position (x,y) of m Image
+func DrawLabel(m draw.Image, l Label, x, y int) error {
 	l.SetSrc(image.NewUniform(l.Color))
 	l.SetClip(m.Bounds())
 	l.SetDst(m)
@@ -38,7 +39,7 @@ func DrawLabel(m *image.NRGBA, l Label, x, y int) error {
 	return nil
 }
 
-//NewLabel return a new *Label
+// NewLabel return a new *Label
 func NewLabel(text string, color color.Color, dpi float64, f *truetype.Font, fontSize float64) *Label {
 	ctx := freetype.NewContext()
 	ctx.SetDPI(dpi)
@@ -58,16 +59,16 @@ func NewLabel(text string, color color.Color, dpi float64, f *truetype.Font, fon
 		Text:    text,
 		Color:   color,
 		Width:   w,
-		Heigth:  h,
+		Height:  h,
 	}
 
 	return l
 }
 
-//NewImage return a new image.Image of w x h size and c Color
+// NewImage return a new image.Image of w x h size and c Color
 func NewImage(w, h int, c color.Color) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, w, h))
-	draw.Draw(img, img.Bounds(), &image.Uniform{c}, image.ZP, draw.Src)
+	draw.Draw(img, img.Bounds(), &image.Uniform{C: c}, image.Point{X: 0, Y: 0}, draw.Src)
 	return img
 }
 
@@ -89,5 +90,10 @@ func Encode(w io.Writer, m image.Image, f string) (int, error) {
 		}
 	}
 
-	return w.Write(buffer.Bytes())
+	n, err := w.Write(buffer.Bytes())
+	if err != nil {
+		return 0, fmt.Errorf("can not encode image %w", err)
+	}
+
+	return n, nil
 }

@@ -67,7 +67,7 @@ func parseRequest(r *http.Request) (*imageRequest, error) {
 }
 
 func calculateLabelSize(l, w, h int) float64 {
-	return math.Max(math.Min(float64(w)/float64(l)*float64(1.15), float64(h)*float64(0.5)), float64(5))
+	return math.Max(math.Min(float64(w)/float64(l)*1.15, float64(h)*0.5), float64(5))
 }
 
 func parseImageSize(s string) (int, int) {
@@ -99,7 +99,7 @@ func parseColor(s string, d color.RGBA) color.RGBA {
 }
 
 func parseNameColor(s string) (color.RGBA, error) {
-	if c, ok := colornames.Map[s]; ok == true {
+	if c, ok := colornames.Map[s]; ok {
 		return c, nil
 	}
 	return color.RGBA{}, errInvalidFormat
