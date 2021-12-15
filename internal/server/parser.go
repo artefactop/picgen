@@ -3,13 +3,13 @@ package server
 import (
 	"fmt"
 	"image/color"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/image/colornames"
 )
 
@@ -47,7 +47,7 @@ func parseRequest(r *http.Request) (*imageRequest, error) {
 
 	fontName := "goregular"
 
-	log.Printf("Size:%dx%d, Format:%s, Color:%v, Label:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
+	log.Debug().Msgf("Size:%dx%d, Format:%s, Color:%v, Label:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
 		width, height, imageFormat, backgroundColor, labelText, labelColor, labelSize, fontName)
 
 	op := &imageRequest{
