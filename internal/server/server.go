@@ -20,11 +20,12 @@ const (
 	maxArea            = int(16000000)
 	maxWidth           = int(9999)
 	maxHeight          = int(9999)
+	fontName           = string("goregular")
 )
 
 var (
-	defaultColor      = color.RGBA{1, 173, 216, 255}
-	defaultLabelColor = color.RGBA{255, 255, 255, 255}
+	defaultColor      = color.RGBA{R: 1, G: 173, B: 216, A: 255}
+	defaultLabelColor = color.RGBA{R: 255, G: 255, B: 255, A: 255}
 	errInvalidFormat  = errors.New("invalid format")
 )
 
@@ -64,7 +65,7 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 
 	if width*height >= maxArea || width > maxWidth || height > maxHeight {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "kaboom %v", errInvalidFormat)
+		_, _ = fmt.Fprintf(w, "kaboom %v", errInvalidFormat)
 		return
 	}
 
@@ -77,10 +78,10 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 
 	labelSize := calculateLabelSize(len(labelText), width, height)
 
-	fontName := "goregular"
-
-	log.Printf("Size:%dx%d, Format:%s, Color:%v, Label.Text:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
-		width, height, defaultImageFormat, backgroundColor, labelText, labelColor, labelSize, fontName)
+	log.Debug().Msgf(
+		"Size:%dx%d, Format:%s, Color:%v, Label.Text:%s, Label.Color:%v, Label.Size:%f Label.Font:%s",
+		width, height, defaultImageFormat, backgroundColor, labelText, labelColor, labelSize, fontName,
+	)
 
 	ir := &imageRequest{
 		Width:      width,
@@ -96,7 +97,10 @@ func RootHandler(w http.ResponseWriter, req *http.Request) {
 		LabelY:     height / 2,
 	}
 
-	writeImage(w, ir)
+	_, err := writeImage(w, ir)
+	if err != nil {
+		log.Error().Msgf("error writing image %v", err)
+	}
 }
 
 // PathHandler ...
@@ -108,17 +112,17 @@ func PathHandler(w http.ResponseWriter, req *http.Request) {
 
 	ir, err := parseRequest(req)
 	if err != nil {
-		if err == errInvalidFormat {
+		if errors.Is(err, errInvalidFormat) {
 			w.WriteHeader(http.StatusBadRequest)
 		}
-		fmt.Fprintf(w, "kaboom %v", err)
+		_, _ = fmt.Fprintf(w, "kaboom %v", err)
 		return
 	}
 
 	_, err = writeImage(w, ir)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "kaboom %v", err)
+		_, _ = fmt.Fprintf(w, "kaboom %v", err)
 		return
 	}
 }
@@ -128,20 +132,24 @@ func writeImage(w http.ResponseWriter, ir *imageRequest) (int, error) {
 
 	f, err := truetype.Parse(goregular.TTF)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("can not write image: %w", err)
 	}
 
 	if ir.LabelText != "" {
 		label := image.NewLabel(ir.LabelText, ir.LabelColor, ir.LabelDpi, f, ir.LabelSize)
-		lx := int((ir.Width - label.Width) / 2.0)
-		ly := int((ir.Height-label.Heigth)/2.0 + label.Heigth)
+		lx := (ir.Width - label.Width) / 2.0
+		ly := (ir.Height-label.Height)/2.0 + label.Height
 		err = image.DrawLabel(img, *label, lx, ly)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("can not write image: %w", err)
 		}
 	}
 
 	addCacheHeaders(w)
 
-	return image.Encode(w, img, ir.Format)
+	n, err := image.Encode(w, img, ir.Format)
+	if err != nil {
+		return 0, fmt.Errorf("can not write image: %w", err)
+	}
+	return n, nil
 }
